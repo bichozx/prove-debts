@@ -1,9 +1,10 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { AuthModule } from './auth/auth.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getDatabaseConfig } from './config/dataBase.config';
 import { UsersModule } from './users/users.module';
+import { getDatabaseConfig } from './config/dataBase.config';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
       useFactory: getDatabaseConfig,
     }),
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
