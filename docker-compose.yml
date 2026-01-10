@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: prove-debts
+    restart: always
+    environment:
+      POSTGRES_DB: prove-debs_db
+      POSTGRES_USER: prove-debs_user
+      POSTGRES_PASSWORD: debs_password
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: prove-debs-redis
+    restart: always
+    ports:
+      - '6380:6379'
+
+volumes:
+  postgres_data:
