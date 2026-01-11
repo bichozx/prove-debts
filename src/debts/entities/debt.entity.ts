@@ -19,13 +19,19 @@ export class Debt {
 
   @Column({
     type: 'varchar',
-    enum: DebtStatus,
+    length: 255,
+  })
+  description: string;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
     default: DebtStatus.PENDING,
   })
   status: DebtStatus;
 
   @ManyToOne(() => User, { eager: false })
-  User: User;
+  user: User;
 
   @CreateDateColumn()
   createdAt: Date;
