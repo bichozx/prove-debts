@@ -7,11 +7,12 @@ import {
 } from 'typeorm';
 
 import { Exclude } from 'class-transformer';
+import { UserRole } from '../enums/roles.status';
 
-export enum UserRole {
-  ADMIN = 'admin',
-  AFFILIATE = 'affiliate',
-}
+// export enum UserRole {
+//   ADMIN = 'admin',
+//   AFFILIATE = 'affiliate',
+// }
 
 @Entity('users')
 export class User {
