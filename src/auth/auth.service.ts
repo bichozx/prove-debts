@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
+import { AuthResponse } from '../common/authResponse.interface';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<AuthResponse> {
     const exists = await this.usersRepository.findOne({
       where: { email: dto.email },
     });
@@ -36,7 +37,7 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<AuthResponse> {
     const user = await this.usersRepository.findOne({
       where: { email: dto.email },
     });
@@ -48,8 +49,16 @@ export class AuthService {
     return this.generateToken(user);
   }
 
-  generateToken(user: User) {
+  generateToken(user: User): AuthResponse {
     const payload = { sub: user.id, email: user.email, role: user.role };
-    return { access_token: this.jwtService.sign(payload) };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
   }
 }
