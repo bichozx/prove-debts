@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { DebtsModule } from './debts/debts.module';
 import { Module } from '@nestjs/common';
+import { RedisModule } from './redis/redis.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { getDatabaseConfig } from './config/dataBase.config';
@@ -16,6 +17,7 @@ import { getDatabaseConfig } from './config/dataBase.config';
       inject: [ConfigService],
       useFactory: getDatabaseConfig,
     }),
+    RedisModule,
     UsersModule,
     AuthModule,
     DebtsModule,
