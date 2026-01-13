@@ -1,18 +1,21 @@
-📌 Descripción general
+📌 Prove Debts – Backend API
 
-Este proyecto es un backend REST API desarrollado con NestJS, PostgreSQL y Redis, que permite la gestión de deudas por usuario autenticado.
+Backend REST API desarrollado con NestJS, PostgreSQL y Redis, orientado a la gestión de deudas por usuario autenticado.
+El sistema implementa autenticación JWT, cache por usuario y una arquitectura modular y escalable.
 
-Incluye:
+🧾 Funcionalidades principales
 
-Autenticación con JWT
+Autenticación basada en JWT
 
-CRUD de deudas
+CRUD completo de deudas
 
 Cache por usuario con Redis
 
 Invalidación automática del cache
 
-Arquitectura modular y escalable
+Aislamiento de datos por usuario
+
+Arquitectura modular (por dominios)
 
 🧱 Tecnologías usadas
 
@@ -28,37 +31,45 @@ Redis (ioredis)
 
 JWT / Passport
 
-Docker (solo Redis / DB)
+Docker & Docker Compose (Redis)
+
+⚠️ PostgreSQL no se crea automáticamente.
+La base de datos debe crearse manualmente antes de iniciar la aplicación.
 
 🧠 Arquitectura del sistema
 src/
 ├── auth/ # Login, JWT, Guards
 ├── users/ # Usuarios
 ├── debts/ # Dominio de deudas
-├── redis/ # Cliente Redis global (ioredis)
-├── config/ # Configuración base de DB
+├── redis/ # Cliente Redis global
+├── config/ # Configuración DB y entorno
 └── main.ts
 
 Flujo principal
-Request → JWT Guard → Controller → Service
+Request
+→ JWT Guard
+→ Controller
+→ Service
 → PostgreSQL (TypeORM)
-→ Redis (Cache por usuario)
+→ Redis (cache por usuario)
 
 🔐 Autenticación
 
-Autenticación basada en JWT
+Autenticación mediante JWT
 
-Cada request debe incluir:
+Cada request protegido debe incluir:
 
 Authorization: Bearer <token>
 
-Todas las deudas están ligadas al usuario autenticado
+Todas las deudas están asociadas al usuario autenticado
 
-No se puede acceder a deudas de otro usuario
+No es posible acceder a deudas de otros usuarios
 
 💾 Cache con Redis
 
-Redis se usa directamente con ioredis (no cache-manager)
+Redis se utiliza directamente con ioredis
+
+No se usa cache-manager para tener mayor control
 
 Cache por usuario:
 
@@ -70,7 +81,7 @@ El cache se:
 
 Guarda en GET /debts
 
-Invalida automáticamente al crear / editar / eliminar / pagar deuda
+Invalida al crear, editar, eliminar o pagar una deuda
 
 📂 Entidad Debt
 Debt {
@@ -90,45 +101,66 @@ Node.js v18+
 
 Docker
 
-Docker Compose (opcional)
+Docker Compose
 
-PostgreSQL
+PostgreSQL (instalado localmente)
 
-Redis
-
-2️⃣ Clonar el repositorio
+2️⃣ Clonar repositorio
 git clone <repo-url>
 cd prove-debts
 
 3️⃣ Instalar dependencias
 npm install
 
-4️⃣ Levantar Redis con Docker
-docker run -d \
- --name prove-debs-redis \
- -p 6380:6379 \
- redis
+4️⃣ Crear la base de datos (PASO MANUAL OBLIGATORIO)
 
-Comprobar:
+La base de datos NO se crea automáticamente.
+
+Desde PostgreSQL:
+
+CREATE DATABASE prove-debs_db;
+
+5️⃣ Variables de entorno
+
+Crear archivo .env en la raíz del proyecto:
+
+NODE_ENV=development
+PORT=4001
+FRONTEND_URL=http://localhost:4000
+
+# Database
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=Danger4587
+DB_NAME=prove-debs_db
+
+# Redis
+
+REDIS_HOST=localhost
+REDIS_PORT=6380
+
+# JWT
+
+JWT_SECRET=your-super-secret-jwt-key-change-in-production-minimum-32-chars
+JWT_EXPIRES_IN=10d
+
+6️⃣ Levantar Redis con Docker Compose
+docker compose up -d
+
+Verificar Redis:
 
 docker exec -it prove-debs-redis redis-cli ping
 
-# PONG
+Resultado esperado:
 
-5️⃣ Variables de entorno .env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=debts_db
+PONG
 
-JWT_SECRET=supersecret
-JWT_EXPIRES_IN=1d
-
-6️⃣ Iniciar aplicación
+7️⃣ Iniciar aplicación
 npm run start:dev
 
-Servidor:
+Servidor disponible en:
 
 http://localhost:4001
 
@@ -139,9 +171,9 @@ POST /auth/login Login de usuario
 💸 Deudas
 Método Endpoint Descripción
 POST /debts Crear deuda
-GET /debts Listar deudas (con cache)
+GET /debts Listar deudas (cacheado)
 PATCH /debts/:id Editar deuda
-PATCH /debts/:id/pay Marcar como pagada
+PATCH /debts/:id/pay Marcar deuda como pagada
 DELETE /debts/:id Eliminar deuda
 🧪 Ejemplo de flujo con cache
 
@@ -170,51 +202,22 @@ Redis se inicializa como módulo global:
 providers: [
 {
 provide: REDIS_CLIENT,
-useFactory: () => new Redis({ host: 'localhost', port: 6380 }),
+useFactory: () =>
+new Redis({ host: 'localhost', port: 6380 }),
 },
 ],
 exports: [REDIS_CLIENT],
 })
 export class RedisModule {}
 
-✅ Buenas prácticas aplicadas
+✅ Decisiones técnicas
 
-Cache manual controlado
+Cache manual para control total
 
-Invalidación explícita
+Invalidación explícita para evitar datos obsoletos
 
-Seguridad por usuario
+Seguridad basada en usuario autenticado
 
-Arquitectura modular
-
-Servicios delgados
+Arquitectura modular orientada a dominio
 
 Redis desacoplado del framework
-
-📌 Posibles mejoras
-
-Tests e2e con Supertest + Redis
-
-Métricas cache hit/miss
-
-Rate limiting con Redis
-
-Soft delete de deudas
-
-Eventos con EventEmitter / BullMQ
-
-👨‍💻 Autor
-
-Proyecto desarrollado por Juan Camilo Giraldo Agudelo
-
-Si quieres, en el siguiente paso puedo:
-
-🔹 Adaptarlo a entrega universitaria
-
-🔹 Simplificar para prueba técnica
-
-🔹 Agregar diagramas
-
-🔹 Crear docker-compose completo
-
-Solo dime 👍
