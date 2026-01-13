@@ -29,7 +29,6 @@ export class DebtsService {
     @Inject(REDIS_CLIENT)
     private readonly redis: Redis,
   ) {
-    console.log('🏗️ DebtsService initialized');
     console.log('🔌 Redis client injected:', this.redis ? 'YES ✅' : 'NO ❌');
   }
 
@@ -128,7 +127,6 @@ export class DebtsService {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return JSON.parse(cached);
-        //return cached;
       }
     } catch (error) {
       console.error('❌ Error getting from cache:', error);
@@ -205,7 +203,10 @@ export class DebtsService {
     const raw = await this.debtsRepository
       .createQueryBuilder('debt')
       .select('COUNT(*)', 'totalDebts')
-      .addSelect('COALESCE(SUM(debt.amount), 0)', 'totalAmount')
+      .addSelect(
+        `COALESCE(SUM(CASE WHEN debt.status = :pending THEN debt.amount ELSE 0 END), 0)`,
+        'totalAmount',
+      )
       .addSelect(
         `COALESCE(SUM(CASE WHEN debt.status = :paid THEN debt.amount ELSE 0 END), 0)`,
         'paidAmount',
@@ -229,24 +230,13 @@ export class DebtsService {
       })
       .getRawOne<DebtSummaryRaw>();
 
-    if (!raw) {
-      return {
-        totalDebts: 0,
-        totalAmount: 0,
-        paidAmount: 0,
-        pendingAmount: 0,
-        countPaid: 0,
-        countPending: 0,
-      };
-    }
-
     return {
-      totalDebts: Number(raw.totalDebts),
-      totalAmount: Number(raw.totalAmount),
-      paidAmount: Number(raw.paidAmount),
-      pendingAmount: Number(raw.pendingAmount),
-      countPaid: Number(raw.countPaid),
-      countPending: Number(raw.countPending),
+      totalDebts: Number(raw?.totalDebts ?? 0),
+      totalAmount: Number(raw?.totalAmount ?? 0),
+      paidAmount: Number(raw?.paidAmount ?? 0),
+      pendingAmount: Number(raw?.pendingAmount ?? 0),
+      countPaid: Number(raw?.countPaid ?? 0),
+      countPending: Number(raw?.countPending ?? 0),
     };
   }
 }

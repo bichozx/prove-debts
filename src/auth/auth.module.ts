@@ -9,7 +9,7 @@ import { jwtConstants } from './guards/jwt.constants';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]), // 🔑 ESTO ES LA CLAVE
+    TypeOrmModule.forFeature([User]),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1h' },

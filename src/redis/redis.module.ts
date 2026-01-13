@@ -15,7 +15,7 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
         const client = new Redis({
           host: 'localhost',
           port: 6380,
-          lazyConnect: false, // Conectar inmediatamente
+          lazyConnect: false,
         });
 
         client.on('connect', () => {
@@ -30,7 +30,6 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
           console.error('❌ Redis error:', err.message);
         });
 
-        // Hacer una prueba directa
         client
           .set('startup-test', 'hello', 'EX', 300)
           .then(() => {
